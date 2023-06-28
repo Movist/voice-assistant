@@ -1,13 +1,15 @@
 import edu.cmu.sphinx.api.Configuration;
 import edu.cmu.sphinx.api.LiveSpeechRecognizer;
+import edu.cmu.sphinx.api.SpeechResult;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import io.github.bonigarcia.wdm.WebDriverManager;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.Properties;
+import java.util.Scanner;
 
 public class VoiceAssistant {
 
@@ -17,15 +19,29 @@ public class VoiceAssistant {
     private static String wordPath;
 
     public static void main(String[] args) throws Exception {
+
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Введите путь к файлу Steam: ");
+        steamPath = scanner.nextLine();
+
+        System.out.print("Введите путь к файлу Discord: ");
+        discordPath = scanner.nextLine();
+
+        System.out.print("Введите путь к файлу Word: ");
+        wordPath = scanner.nextLine();
+
+        scanner.close();
+
         // Конфигурация распознавания речи
         Configuration configuration = new Configuration();
-
         // Конфигурация пути к файлам
         loadFileConfiguration();
         // Установка пути к ресурсам модели и файлам конфигурации
-        configuration.setAcousticModelPath("file:///C:/Users/Shtigun/Desktop/course2/voice-assistant/src/main/resources/ru");
-        configuration.setDictionaryPath("file:///C:/Users/Shtigun/Desktop/course2/voice-assistant/src/main/resources/dictionary.dic");
-        configuration.setGrammarPath("file:///C:/Users/Shtigun/Desktop/course2/voice-assistant/src/main/resources");
+        configuration.setAcousticModelPath(VoiceAssistant.class.getResource("/ru").toString());
+        configuration.setDictionaryPath(VoiceAssistant.class.getResource("/dictionary.dic").toString());
+        configuration.setGrammarPath(VoiceAssistant.class.getResource("/commands/").toString());
+
         configuration.setGrammarName("voiceCommands");
         configuration.setUseGrammar(true); // Использование грамматики
 
@@ -39,74 +55,82 @@ public class VoiceAssistant {
         recognizer.startRecognition(true);
 
         // Инициализация WebDriver
-        System.setProperty("webdriver.chrome.driver", "C:/Users/Shtigun/Desktop/course2/voice-assistant/src/main/resources/chromedriver.exe");
+        /*WebDriverManager.chromedriver().setup();*/
+
 
         // Обработка распознанных команд
         while (true) {
-            String utterance = recognizer.getResult().getHypothesis();
+            SpeechResult result = recognizer.getResult();
 
-            if (utterance != null) {
-                System.out.println("Распознанная команда: " + utterance);
+            if (result != null) {
+                String utterance = result.getHypothesis();
 
-                if (utterance.startsWith("otkroy brauzer")) {
-                    driver = new ChromeDriver();
-                    openBrowser();
-                } else if (utterance.startsWith("zakkroy brauzer")) {
-                    closeBrowser();
-                } else if (utterance.startsWith("otkroy vkladku")) {
-                    openNewTab();
-                } else if (utterance.startsWith("zakkroy vkladku")) {
-                    closeCurrentTab();
-                } else if (utterance.equals("obnovi")) {
-                    refreshPage();
-                } else if (utterance.equals("nazad")) {
-                    goBack();
-                } else if (utterance.equals("vpered")) {
-                    goForward();
-                } else if (utterance.equals("vverkh")) {
-                    scrollUp();
-                } else if (utterance.equals("vniz")) {
-                    scrollDown();
-                } else if (utterance.startsWith("otkroy stim")) {
-                    openSteam();
-                } else if (utterance.startsWith("zakkroy stim")) {
-                    closeSteam();
-                } else if (utterance.startsWith("otkroy diskord")) {
-                    openDiscord();
-                } else if (utterance.startsWith("zakkroy diskord")) {
-                    closeDiscord();
-                } else if (utterance.startsWith("otkroy vord")) {
-                    openWord();
-                } else if (utterance.startsWith("zakkroy vord")) {
-                    closeWord();
-                } else if (utterance.equals("vklyuchi muziku")) {
-                    playMusic();
-                } else if (utterance.equals("vykluchi muziku")) {
-                    pauseMusic();
-                } else if (utterance.equals("vozobnovi")) {
-                    resumeMusic();
-                } else if (utterance.equals("sleduyushchiy")) {
-                    playNextTrack();
-                } else if (utterance.equals("predyushchiy")) {
-                    playPreviousTrack();
+                if (utterance != null) {
+                    System.out.println("Распознанная команда: " + utterance);
+
+                    if (utterance.startsWith("otkroy brauzer")) {
+
+                        driver = new ChromeDriver();
+                        openBrowser();
+                    } else if (utterance.startsWith("zakkroy brauzer")) {
+                        closeBrowser();
+                    } else if (utterance.startsWith("otkroy vkladku")) {
+                        openNewTab();
+                    } else if (utterance.startsWith("zakkroy vkladku")) {
+                        closeCurrentTab();
+                    } else if (utterance.equals("obnovi")) {
+                        refreshPage();
+                    } else if (utterance.equals("nazad")) {
+                        goBack();
+                    } else if (utterance.equals("vpered")) {
+                        goForward();
+                    } else if (utterance.equals("vverkh")) {
+                        scrollUp();
+                    } else if (utterance.equals("vniz")) {
+                        scrollDown();
+                    } else if (utterance.startsWith("otkroy stim")) {
+                        openSteam();
+                    } else if (utterance.startsWith("zakkroy stim")) {
+                        closeSteam();
+                    } else if (utterance.startsWith("otkroy diskord")) {
+                        openDiscord();
+                    } else if (utterance.startsWith("zakkroy diskord")) {
+                        closeDiscord();
+                    } else if (utterance.startsWith("otkroy vord")) {
+                        openWord();
+                    } else if (utterance.startsWith("zakkroy vord")) {
+                        closeWord();
+                    } else if (utterance.equals("vklyuchi muziku")) {
+                        playMusic();
+                    } else if (utterance.equals("vykluchi muziku")) {
+                        pauseMusic();
+                    } else if (utterance.equals("vozobnovi")) {
+                        resumeMusic();
+                    } else if (utterance.equals("sleduyushchiy")) {
+                        playNextTrack();
+                    } else if (utterance.equals("predyushchiy")) {
+                        playPreviousTrack();
+                    }
                 }
             }
         }
     }
 
-    private static void loadFileConfiguration() {
-        // Получение путей файлов
-        Properties properties = new Properties();
-        try (FileInputStream input = new FileInputStream("C:\\Users\\Shtigun\\Desktop\\course2\\voice-assistant\\src\\main\\resources\\config.properties")) {
-            properties.load(input);
+    private static void loadFileConfiguration() throws IOException {
+        // Изменяем пути к файлам на относительные пути внутри JAR-файла
+        String CONFIG_LOCATION = "/config.properties";
 
-            // Чтение значений из файла конфигурации
-            steamPath = properties.getProperty("steam.path");
-            discordPath = properties.getProperty("discord.path");
-            wordPath = properties.getProperty("word.path");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        // Загружаем файл с использованием InputStream из текущего класса
+        InputStream configInputStream = VoiceAssistant.class.getResourceAsStream(CONFIG_LOCATION);
+
+        // Загружаем свойства из файла конфигурации
+        Properties properties = new Properties();
+        properties.load(configInputStream);
+
+        // Извлекаем значения свойств
+        /*steamPath = properties.getProperty("steamPath");
+        discordPath = properties.getProperty("discordPath");
+        wordPath = properties.getProperty("wordPath");*/
     }
 
     private static void openBrowser() {
